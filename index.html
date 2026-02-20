@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafeBand — Women's Safety Reimagined</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS & RESET
+   ============================================================ */
+:root {
+  --rose:   #ff2d6b;
+  --violet: #7c3aed;
+  --indigo: #4f46e5;
+  --cyan:   #06b6d4;
+  --amber:  #f59e0b;
+  --dark:   #07060f;
+  --dark2:  #0d0b1a;
+  --dark3:  #120f22;
+  --glass:  rgba(255,255,255,0.04);
+  --glass2: rgba(255,255,255,0.07);
+  --rim:    rgba(255,255,255,0.08);
+  --rim2:   rgba(124,58,237,0.3);
+  --text:   #f0eeff;
+  --muted:  rgba(240,238,255,0.45);
+  --dimmer: rgba(240,238,255,0.2);
+  --radius: 24px;
+  --radius-sm: 14px;
+  --shadow-violet: 0 0 40px rgba(124,58,237,0.35);
+  --shadow-rose:   0 0 40px rgba(255,45,107,0.4);
+  --shadow-cyan:   0 0 40px rgba(6,182,212,0.35);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--dark);
+  color: var(--text);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,h2,h3,h4 { font-family: 'Clash Display', sans-serif; }
+
+/* ── grain overlay ── */
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:9999; mix-blend-mode:overlay;
+}
+
+/* ============================================================
+   SCROLL ANIMATIONS
+   ============================================================ */
+.reveal { opacity:0; transform:translateY(36px); transition:opacity 0.75s cubic-bezier(.16,1,.3,1), transform 0.75s cubic-bezier(.16,1,.3,1); }
+.reveal.in { opacity:1; transform:none; }
+.reveal-left  { opacity:0; transform:translateX(-40px); transition:opacity 0.75s cubic-bezier(.16,1,.3,1), transform 0.75s cubic-bezier(.16,1,.3,1); }
+.reveal-left.in  { opacity:1; transform:none; }
+.reveal-right { opacity:0; transform:translateX(40px);  transition:opacity 0.75s cubic-bezier(.16,1,.3,1), transform 0.75s cubic-bezier(.16,1,.3,1); }
+.reveal-right.in { opacity:1; transform:none; }
+.delay-1 { transition-delay:0.1s!important; }
+.delay-2 { transition-delay:0.2s!important; }
+.delay-3 { transition-delay:0.3s!important; }
+.delay-4 { transition-delay:0.4s!important; }
+.delay-5 { transition-delay:0.5s!important; }
+.delay-6 { transition-delay:0.6s!important; }
+
+/* ============================================================
+   TYPOGRAPHY UTILITIES
+   ============================================================ */
+.grad-violet { background:linear-gradient(135deg,var(--violet),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.grad-rose   { background:linear-gradient(135deg,var(--rose),var(--violet)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.grad-full   { background:linear-gradient(135deg,var(--rose),var(--violet),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+/* ============================================================
+   NAV  (mobile-first)
+   ============================================================ */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:500;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1rem 1.25rem;
+  background:rgba(7,6,15,0.7);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--rim);
+}
+
+.logo {
+  font-family:'Clash Display',sans-serif;
+  font-weight:700; font-size:1.2rem;
+  background:linear-gradient(135deg,var(--rose),var(--violet),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  letter-spacing:-0.03em;
+}
+
+.nav-links {
+  display:none;
+  list-style:none; gap:2rem;
+}
+.nav-links a {
+  color:var(--muted); text-decoration:none;
+  font-size:0.875rem; font-weight:500;
+  transition:color 0.2s;
+}
+.nav-links a:hover { color:var(--text); }
+
+.nav-pill {
+  background:linear-gradient(135deg,var(--rose),var(--violet));
+  border:none; color:#fff;
+  padding:0.55rem 1.25rem;
+  border-radius:50px;
+  font-family:'Clash Display',sans-serif;
+  font-weight:600; font-size:0.85rem;
+  cursor:pointer; transition:all 0.25s;
+  box-shadow:0 4px 20px rgba(255,45,107,0.3);
+  white-space:nowrap;
+}
+.nav-pill:hover { transform:translateY(-2px); box-shadow:var(--shadow-rose); }
+
+@media(min-width:768px){
+  nav { padding:1.1rem 3rem; }
+  .nav-links { display:flex; }
+}
+@media(min-width:1100px){
+  nav { padding:1.2rem 5rem; }
+}
+
+/* ============================================================
+   SECTION WRAPPER
+   ============================================================ */
+.wrap { width:100%; max-width:1200px; margin:0 auto; padding:0 1.25rem; }
+section { padding:5rem 0; position:relative; }
+@media(min-width:768px){ section { padding:7rem 0; } }
+@media(min-width:1100px){ section { padding:9rem 0; } }
+
+/* ── section labels ── */
+.chip {
+  display:inline-flex; align-items:center; gap:0.4rem;
+  background:rgba(124,58,237,0.12);
+  border:1px solid rgba(124,58,237,0.25);
+  border-radius:50px; padding:0.3rem 0.9rem;
+  font-size:0.72rem; font-weight:700; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--violet);
+  margin-bottom:1rem;
+}
+.chip::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--violet); animation:blink 1.8s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.section-title {
+  font-size:clamp(2rem,6vw,3.5rem);
+  font-weight:700; line-height:1.08;
+  letter-spacing:-0.03em;
+  margin-bottom:1rem;
+}
+.section-sub { color:var(--muted); font-size:1rem; line-height:1.75; max-width:520px; }
+
+.divider {
+  width:48px; height:3px;
+  background:linear-gradient(90deg,var(--rose),var(--violet));
+  border-radius:2px; margin:1rem 0 2rem;
+}
+.mx-auto { margin-left:auto; margin-right:auto; }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+#hero {
+  min-height:100svh;
+  display:grid;
+  place-items:center;
+  padding-top:80px;
+  overflow:hidden;
+}
+
+/* mesh bg */
+.hero-bg {
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 0%, rgba(124,58,237,0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 40% at 85% 30%, rgba(6,182,212,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 10% 80%, rgba(255,45,107,0.1) 0%, transparent 60%);
+}
+
+/* grid lines */
+.hero-grid-lines {
+  position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(124,58,237,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.06) 1px, transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%);
+}
+
+.hero-inner {
+  display:grid;
+  gap:4rem;
+  align-items:center;
+  width:100%;
+  max-width:1200px;
+  padding:0 1.25rem;
+  position:relative; z-index:1;
+}
+
+@media(min-width:900px){
+  .hero-inner { grid-template-columns:1.1fr 1fr; }
+}
+
+/* badge */
+.hero-badge {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  background:rgba(255,45,107,0.1);
+  border:1px solid rgba(255,45,107,0.25);
+  border-radius:50px; padding:0.4rem 1rem;
+  font-size:0.78rem; font-weight:700; color:var(--rose);
+  letter-spacing:0.05em; margin-bottom:1.4rem;
+  animation:fadeUp 0.7s ease both;
+}
+
+h1.hero-title {
+  font-size:clamp(3rem,9vw,6rem);
+  font-weight:700; line-height:1.0;
+  letter-spacing:-0.04em;
+  animation:fadeUp 0.7s 0.1s ease both;
+}
+
+.hero-desc {
+  color:var(--muted); font-size:1.05rem;
+  line-height:1.7; margin:1.2rem 0 2rem;
+  max-width:420px;
+  animation:fadeUp 0.7s 0.2s ease both;
+}
+
+.hero-btns {
+  display:flex; flex-wrap:wrap; gap:0.75rem;
+  animation:fadeUp 0.7s 0.3s ease both;
+}
+
+.btn-primary {
+  background:linear-gradient(135deg,var(--rose),var(--violet));
+  border:none; color:#fff;
+  padding:0.9rem 2rem;
+  border-radius:50px;
+  font-family:'Clash Display',sans-serif;
+  font-weight:600; font-size:0.95rem;
+  cursor:pointer; transition:all 0.25s;
+  text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem;
+  box-shadow:0 8px 30px rgba(255,45,107,0.3);
+}
+.btn-primary:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(255,45,107,0.45); }
+
+.btn-ghost {
+  background:transparent;
+  border:1px solid var(--rim2);
+  color:var(--text); padding:0.9rem 2rem;
+  border-radius:50px;
+  font-family:'Clash Display',sans-serif;
+  font-weight:600; font-size:0.95rem;
+  cursor:pointer; transition:all 0.25s;
+  text-decoration:none; display:inline-block;
+}
+.btn-ghost:hover { border-color:var(--violet); background:rgba(124,58,237,0.08); }
+
+/* stats row */
+.hero-stats {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:0.75rem; margin-top:2.5rem;
+  animation:fadeUp 0.7s 0.4s ease both;
+}
+.stat-box {
+  background:var(--glass); border:1px solid var(--rim);
+  border-radius:var(--radius-sm); padding:1rem 0.75rem;
+  text-align:center; backdrop-filter:blur(10px);
+}
+.stat-num {
+  font-family:'Clash Display',sans-serif;
+  font-size:1.6rem; font-weight:700;
+  background:linear-gradient(135deg,var(--violet),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.stat-lbl { font-size:0.7rem; color:var(--dimmer); margin-top:0.2rem; font-weight:500; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(28px); }
+  to   { opacity:1; transform:none; }
+}
+
+/* ── Bracelet 3D Visual ── */
+.hero-visual {
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+
+.bracelet-stage {
+  position:relative; width:min(340px,90vw); aspect-ratio:1;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* orbits */
+.orb {
+  position:absolute; border-radius:50%;
+  border:1px solid rgba(124,58,237,0.15);
+  animation:spin linear infinite;
+}
+.orb::before {
+  content:''; position:absolute; border-radius:50%;
+  top:-4px; left:50%; transform:translateX(-50%);
+}
+.orb-a { width:90%; height:90%; animation-duration:14s; }
+.orb-a::before { width:8px;height:8px;background:var(--cyan);box-shadow:0 0 12px var(--cyan); }
+.orb-b { width:72%; height:72%; animation-duration:9s; animation-direction:reverse; border-color:rgba(255,45,107,0.12); }
+.orb-b::before { width:6px;height:6px;background:var(--rose);box-shadow:0 0 10px var(--rose); }
+.orb-c { width:55%; height:55%; animation-duration:20s; border-color:rgba(6,182,212,0.1); }
+.orb-c::before { width:5px;height:5px;background:var(--violet);box-shadow:0 0 8px var(--violet); }
+
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* pulsing halo */
+.halo {
+  position:absolute; border-radius:50%;
+  animation:halo-pulse 2.5s ease-out infinite;
+}
+.halo-1 { width:120px;height:120px;border:1px solid rgba(124,58,237,0.5); }
+.halo-2 { width:170px;height:170px;border:1px solid rgba(124,58,237,0.25);animation-delay:0.7s; }
+.halo-3 { width:220px;height:220px;border:1px solid rgba(124,58,237,0.12);animation-delay:1.4s; }
+@keyframes halo-pulse {
+  0%   { opacity:0.9; transform:scale(0.7); }
+  100% { opacity:0; transform:scale(1.4); }
+}
+
+.device-wrap {
+  position:relative; z-index:2;
+  filter:drop-shadow(0 0 28px rgba(124,58,237,0.7)) drop-shadow(0 0 60px rgba(6,182,212,0.3));
+  animation:float 3.5s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform:translateY(0) rotate(-4deg); }
+  50%      { transform:translateY(-18px) rotate(-4deg); }
+}
+
+/* floating tags */
+.ftag {
+  position:absolute; z-index:3;
+  background:rgba(13,11,26,0.85);
+  border:1px solid var(--rim);
+  backdrop-filter:blur(16px);
+  border-radius:12px; padding:0.5rem 0.9rem;
+  font-size:0.72rem; font-weight:600;
+  white-space:nowrap;
+  animation:ftag-float ease-in-out infinite;
+}
+.ftag-1 { top:10%; right:-2%; color:var(--cyan); border-color:rgba(6,182,212,0.25); animation-duration:3s; animation-delay:0s; }
+.ftag-2 { bottom:18%; right:0%; color:var(--rose); border-color:rgba(255,45,107,0.25); animation-duration:3.5s; animation-delay:0.8s; }
+.ftag-3 { top:40%; left:-5%; color:var(--violet); border-color:rgba(124,58,237,0.25); animation-duration:4s; animation-delay:0.4s; }
+@keyframes ftag-float {
+  0%,100% { transform:translateY(0); }
+  50%      { transform:translateY(-8px); }
+}
+
+/* ============================================================
+   PROBLEM
+   ============================================================ */
+#problem { background:var(--dark2); }
+
+.prob-grid {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:1rem;
+}
+@media(min-width:600px){ .prob-grid { grid-template-columns:1fr 1fr; } }
+@media(min-width:1000px){ .prob-grid { grid-template-columns:repeat(4,1fr); } }
+
+.prob-card {
+  background:var(--glass);
+  border:1px solid var(--rim);
+  border-radius:var(--radius);
+  padding:1.75rem 1.5rem;
+  position:relative; overflow:hidden;
+  transition:all 0.3s cubic-bezier(.16,1,.3,1);
+  cursor:default;
+}
+.prob-card::after {
+  content:''; position:absolute;
+  inset:0; border-radius:inherit;
+  background:linear-gradient(135deg,rgba(124,58,237,0.06),rgba(6,182,212,0.03));
+  opacity:0; transition:opacity 0.3s;
+}
+.prob-card:hover { border-color:rgba(124,58,237,0.4); transform:translateY(-6px); box-shadow:var(--shadow-violet); }
+.prob-card:hover::after { opacity:1; }
+.prob-card:hover .prob-top-line { opacity:1; }
+
+.prob-top-line {
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--rose),var(--violet),var(--cyan));
+  opacity:0; transition:opacity 0.3s; border-radius:inherit;
+}
+
+.prob-icon {
+  font-size:2.2rem; margin-bottom:1rem; display:block;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+}
+.prob-card h3 { font-size:1.05rem; font-weight:600; margin-bottom:0.5rem; }
+.prob-card p  { font-size:0.82rem; color:var(--muted); line-height:1.6; }
+
+/* ============================================================
+   SOLUTION
+   ============================================================ */
+#solution { background:var(--dark); }
+
+.sol-grid {
+  display:grid; gap:3rem; align-items:center;
+}
+@media(min-width:900px){ .sol-grid { grid-template-columns:1fr 1fr; gap:5rem; } }
+
+/* press items */
+.press-row {
+  display:flex; align-items:center; gap:1.25rem;
+  background:var(--glass);
+  border:1px solid var(--rim);
+  border-radius:18px; padding:1.1rem 1.25rem;
+  margin-bottom:0.75rem;
+  transition:all 0.25s;
+  cursor:default;
+}
+.press-row:hover { border-color:var(--rim2); background:var(--glass2); }
+
+.press-circle {
+  min-width:50px; height:50px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Clash Display',sans-serif;
+  font-weight:700; font-size:1rem;
+  flex-shrink:0;
+}
+.p1 { background:rgba(6,182,212,0.12); color:var(--cyan); border:1px solid rgba(6,182,212,0.3); }
+.p2 { background:rgba(124,58,237,0.12); color:var(--violet); border:1px solid rgba(124,58,237,0.3); }
+.p3 { background:rgba(255,45,107,0.12); color:var(--rose); border:1px solid rgba(255,45,107,0.3); }
+
+.press-info h4 { font-weight:700; font-size:0.9rem; margin-bottom:0.25rem; }
+.press-info p  { font-size:0.78rem; color:var(--muted); line-height:1.5; }
+.press-tag {
+  margin-left:auto; flex-shrink:0;
+  font-size:0.65rem; font-weight:700; letter-spacing:0.08em;
+  padding:0.25rem 0.65rem; border-radius:50px;
+}
+.tag-free    { background:rgba(6,182,212,0.1); color:var(--cyan); border:1px solid rgba(6,182,212,0.2); }
+.tag-premium { background:rgba(255,45,107,0.1); color:var(--rose); border:1px solid rgba(255,45,107,0.2); }
+
+/* demo widget */
+.demo-widget {
+  margin-top:1.5rem;
+  background:var(--glass);
+  border:1px solid var(--rim);
+  border-radius:var(--radius); padding:1.75rem;
+  text-align:center;
+}
+.demo-label { font-size:0.8rem; color:var(--muted); margin-bottom:1.25rem; }
+
+.sos-outer {
+  width:96px; height:96px; border-radius:50%;
+  margin:0 auto 1.25rem;
+  position:relative; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.sos-ring {
+  position:absolute; inset:-8px; border-radius:50%;
+  border:1.5px solid rgba(255,45,107,0.35);
+  animation:sos-ring-pulse 2s ease-out infinite;
+}
+.sos-ring:nth-child(2) { inset:-18px; animation-delay:0.6s; border-color:rgba(255,45,107,0.2); }
+.sos-ring:nth-child(3) { inset:-28px; animation-delay:1.2s; border-color:rgba(255,45,107,0.1); }
+@keyframes sos-ring-pulse { 0%{opacity:0.9;transform:scale(0.85)} 100%{opacity:0;transform:scale(1.1)} }
+
+.sos-btn {
+  width:96px; height:96px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #ff6191, #ff2d6b 45%, #7c3aed);
+  border:none; cursor:pointer;
+  font-family:'Clash Display',sans-serif;
+  font-weight:700; font-size:0.9rem; color:#fff;
+  box-shadow:0 8px 30px rgba(255,45,107,0.5), 0 0 0 4px rgba(255,45,107,0.15);
+  transition:transform 0.12s, box-shadow 0.12s;
+  position:relative; z-index:1;
+}
+.sos-btn:active, .sos-btn.pressed { transform:scale(0.9); box-shadow:0 4px 15px rgba(255,45,107,0.4); }
+
+.demo-status { font-family:'Clash Display',sans-serif; font-weight:600; font-size:0.95rem; min-height:1.4em; transition:color 0.3s; }
+.demo-presses { font-size:0.75rem; color:var(--dimmer); margin-top:0.3rem; }
+
+/* solution visual */
+.sol-visual {
+  display:flex; align-items:center; justify-content:center;
+  position:relative; min-height:380px;
+}
+.sol-nodes {
+  position:relative; width:300px; height:300px;
+  display:flex; align-items:center; justify-content:center;
+}
+.node-center {
+  position:absolute; z-index:3;
+  display:flex; flex-direction:column; align-items:center; gap:0.4rem;
+}
+
+.sol-wave {
+  position:absolute; border-radius:50%;
+  border:1.5px solid rgba(124,58,237,0.4);
+  animation:sol-wave-expand 2.8s ease-out infinite;
+}
+.sol-wave:nth-child(1) { width:90px;height:90px;animation-delay:0s; }
+.sol-wave:nth-child(2) { width:140px;height:140px;animation-delay:0.7s;border-color:rgba(124,58,237,0.25); }
+.sol-wave:nth-child(3) { width:190px;height:190px;animation-delay:1.4s;border-color:rgba(124,58,237,0.12); }
+.sol-wave:nth-child(4) { width:240px;height:240px;animation-delay:2.1s;border-color:rgba(124,58,237,0.06); }
+@keyframes sol-wave-expand {
+  0%   { opacity:0.8; transform:scale(0.5); }
+  100% { opacity:0; transform:scale(1.2); }
+}
+
+.sol-node {
+  position:absolute;
+  background:rgba(13,11,26,0.9);
+  border:1px solid var(--rim);
+  border-radius:12px; padding:0.55rem 0.9rem;
+  font-size:0.72rem; font-weight:600;
+  display:flex; align-items:center; gap:0.4rem;
+  backdrop-filter:blur(12px);
+  animation:node-float ease-in-out infinite;
+}
+.sn-1 { top:0%; right:-5%; color:var(--cyan); border-color:rgba(6,182,212,0.25); animation-duration:3.2s; }
+.sn-2 { bottom:5%; right:-8%; color:var(--rose); border-color:rgba(255,45,107,0.25); animation-duration:4s;animation-delay:0.8s; }
+.sn-3 { top:38%; left:-10%; color:var(--violet); border-color:rgba(124,58,237,0.25); animation-duration:3.6s;animation-delay:0.4s; }
+@keyframes node-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+/* ============================================================
+   HOW IT WORKS
+   ============================================================ */
+#how { background:var(--dark3); }
+
+.flow-wrap {
+  display:flex; flex-direction:column; align-items:center;
+  gap:0;
+}
+@media(min-width:700px){
+  .flow-wrap { flex-direction:row; justify-content:center; flex-wrap:wrap; }
+}
+
+.flow-step {
+  display:flex; flex-direction:column; align-items:center;
+  gap:0.75rem; min-width:110px;
+}
+.flow-icon-box {
+  width:68px; height:68px; border-radius:20px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(6,182,212,0.08));
+  border:1px solid rgba(124,58,237,0.25);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.7rem;
+  box-shadow:0 0 25px rgba(124,58,237,0.25);
+  transition:all 0.3s;
+}
+.flow-step:hover .flow-icon-box {
+  box-shadow:0 0 40px rgba(124,58,237,0.6);
+  border-color:rgba(124,58,237,0.5);
+  transform:scale(1.08);
+}
+.flow-lbl { font-size:0.75rem; font-weight:600; color:var(--muted); text-align:center; max-width:90px; line-height:1.4; }
+
+.flow-arrow {
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.2rem; color:rgba(124,58,237,0.4);
+  padding:0 0.4rem;
+}
+@media(max-width:699px){
+  .flow-arrow { transform:rotate(90deg); padding:0.5rem 0; }
+}
+.flow-arrow span { animation:arrow-anim 1.6s ease-in-out infinite; display:block; }
+@keyframes arrow-anim { 0%,100%{opacity:0.3;transform:translateX(0)} 50%{opacity:1;transform:translateX(4px)} }
+
+/* ── Plans ── */
+.plans-grid {
+  display:grid; gap:1.25rem;
+  grid-template-columns:1fr;
+}
+@media(min-width:640px){ .plans-grid { grid-template-columns:1fr 1fr; } }
+@media(min-width:900px){ .plans-grid { grid-template-columns:repeat(3,1fr); } }
+
+.plan-card {
+  background:var(--glass);
+  border:1px solid var(--rim);
+  border-radius:var(--radius); padding:2rem 1.75rem;
+  position:relative; overflow:hidden;
+  transition:all 0.3s cubic-bezier(.16,1,.3,1);
+}
+.plan-card:hover { transform:translateY(-6px); }
+.plan-card.hot {
+  border-color:rgba(124,58,237,0.5);
+  box-shadow:var(--shadow-violet);
+  background:linear-gradient(160deg,rgba(124,58,237,0.08),rgba(6,182,212,0.04));
+}
+.plan-badge {
+  position:absolute; top:1.1rem; right:1.1rem;
+  background:linear-gradient(135deg,var(--violet),var(--cyan));
+  color:#fff; font-size:0.62rem; font-weight:700;
+  letter-spacing:0.12em; padding:0.25rem 0.65rem;
+  border-radius:50px;
+}
+
+.plan-name { font-family:'Clash Display',sans-serif; font-size:1.15rem; font-weight:700; margin-bottom:0.25rem; }
+.plan-sub  { font-size:0.78rem; color:var(--muted); margin-bottom:1rem; }
+.plan-price {
+  font-family:'Clash Display',sans-serif;
+  font-size:2.4rem; font-weight:700; margin-bottom:1.5rem;
+  letter-spacing:-0.03em;
+}
+.plan-price .cur { font-size:1rem; vertical-align:top; margin-top:0.6rem; display:inline-block; }
+.plan-price .mo  { font-size:0.8rem; font-family:'Cabinet Grotesk',sans-serif; color:var(--muted); font-weight:400; }
+
+.feat-list { list-style:none; margin-bottom:1.75rem; }
+.feat-list li {
+  font-size:0.83rem; padding:0.45rem 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  display:flex; align-items:center; gap:0.6rem; color:var(--muted);
+}
+.feat-list li::before { content:'✦'; color:var(--violet); font-size:0.6rem; flex-shrink:0; }
+
+.plan-btn {
+  width:100%; padding:0.85rem;
+  border-radius:50px;
+  font-family:'Clash Display',sans-serif;
+  font-weight:700; font-size:0.9rem;
+  cursor:pointer; transition:all 0.25s;
+  border:1px solid rgba(124,58,237,0.35);
+  background:transparent; color:var(--violet);
+}
+.plan-card.hot .plan-btn {
+  background:linear-gradient(135deg,var(--violet),var(--cyan));
+  border:none; color:#fff;
+  box-shadow:0 6px 25px rgba(124,58,237,0.3);
+}
+.plan-btn:hover { transform:translateY(-2px); box-shadow:var(--shadow-violet); }
+
+/* ============================================================
+   FEATURES
+   ============================================================ */
+#features { background:var(--dark); }
+
+.feat-grid {
+  display:grid; gap:1rem;
+  grid-template-columns:1fr;
+}
+@media(min-width:600px){ .feat-grid { grid-template-columns:1fr 1fr; } }
+@media(min-width:900px){ .feat-grid { grid-template-columns:repeat(3,1fr); } }
+
+.feat-card {
+  background:var(--glass);
+  border:1px solid var(--rim);
+  border-radius:var(--radius);
+  padding:1.6rem;
+  display:flex; align-items:flex-start; gap:1.1rem;
+  transition:all 0.3s cubic-bezier(.16,1,.3,1);
+  position:relative; overflow:hidden;
+}
+.feat-card::before {
+  content:''; position:absolute;
+  bottom:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--violet),var(--cyan));
+  transform:scaleX(0); transform-origin:left;
+  transition:transform 0.35s cubic-bezier(.16,1,.3,1);
+}
+.feat-card:hover { border-color:rgba(6,182,212,0.3); box-shadow:var(--shadow-cyan); transform:translateY(-4px); }
+.feat-card:hover::before { transform:scaleX(1); }
+
+.feat-ico {
+  min-width:46px; height:46px; border-radius:13px;
+  background:linear-gradient(135deg,rgba(6,182,212,0.15),rgba(124,58,237,0.08));
+  border:1px solid rgba(6,182,212,0.18);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.35rem; flex-shrink:0;
+}
+.feat-card h4 { font-size:0.92rem; font-weight:700; margin-bottom:0.3rem; }
+.feat-card p  { font-size:0.8rem; color:var(--muted); line-height:1.55; }
+
+/* ============================================================
+   IMPACT
+   ============================================================ */
+#impact { background:var(--dark2); }
+
+.impact-grid {
+  display:grid; gap:3.5rem; align-items:center;
+}
+@media(min-width:900px){ .impact-grid { grid-template-columns:1fr 1fr; } }
+
+.sdg-pill {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  background:rgba(255,45,107,0.1);
+  border:1px solid rgba(255,45,107,0.2);
+  border-radius:50px; padding:0.45rem 1rem;
+  font-size:0.78rem; font-weight:700; color:var(--rose);
+  margin-bottom:1.5rem;
+}
+.vision-ul { list-style:none; }
+.vision-ul li {
+  padding:0.85rem 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  display:flex; align-items:center; gap:1rem;
+  font-size:0.88rem; color:rgba(240,238,255,0.7);
+}
+.vision-ico {
+  min-width:38px; height:38px; border-radius:10px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(6,182,212,0.1));
+  border:1px solid rgba(124,58,237,0.2);
+  display:flex; align-items:center; justify-content:center; font-size:1rem;
+}
+
+/* counters */
+.counters {
+  display:grid; grid-template-columns:1fr 1fr; gap:1rem;
+  margin-bottom:1.25rem;
+}
+.counter-card {
+  background:var(--glass); border:1px solid var(--rim);
+  border-radius:var(--radius-sm); padding:1.4rem 1rem;
+  text-align:center;
+}
+.counter-val {
+  font-family:'Clash Display',sans-serif;
+  font-size:2.2rem; font-weight:700;
+  background:linear-gradient(135deg,var(--violet),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.counter-lbl { font-size:0.75rem; color:var(--dimmer); margin-top:0.25rem; }
+
+/* dashboard preview */
+.dash-preview {
+  background:var(--glass); border:1px solid var(--rim);
+  border-radius:var(--radius); padding:1.4rem;
+}
+.dash-header { font-size:0.68rem; color:var(--dimmer); letter-spacing:0.12em; text-transform:uppercase; font-weight:700; margin-bottom:1rem; }
+.dash-row { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem; }
+.dash-kpi {
+  border-radius:12px; padding:0.9rem;
+}
+.dk-pink { background:rgba(255,45,107,0.08); border:1px solid rgba(255,45,107,0.15); }
+.dk-cyan  { background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.15); }
+.dash-kpi .kpi-lbl { font-size:0.68rem; color:var(--muted); }
+.dash-kpi .kpi-val { font-family:'Clash Display',sans-serif; font-size:1.6rem; font-weight:700; }
+.kpi-val.pink { color:var(--rose); }
+.kpi-val.blue  { color:var(--cyan); }
+.dash-rows { background:rgba(124,58,237,0.05); border-radius:10px; padding:0.85rem; }
+.dash-item { display:flex; justify-content:space-between; font-size:0.74rem; padding:0.3rem 0; }
+.dash-item span:last-child { font-weight:600; }
+.col-blue { color:var(--cyan); }
+.col-green { color:#4ade80; }
+
+/* ============================================================
+   CTA
+   ============================================================ */
+#cta {
+  background:var(--dark); text-align:center;
+  position:relative; overflow:hidden;
+}
+.cta-glow {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:700px; height:350px; pointer-events:none;
+  background:radial-gradient(ellipse,rgba(124,58,237,0.18) 0%,transparent 70%);
+}
+.cta-title { font-size:clamp(2.5rem,7vw,5rem); font-weight:700; line-height:1.05; letter-spacing:-0.04em; margin-bottom:1rem; }
+.cta-sub { color:var(--muted); font-size:1.05rem; margin-bottom:2.5rem; }
+.cta-btns { display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  background:var(--dark2); padding:1.75rem 1.25rem;
+  border-top:1px solid var(--rim);
+  display:flex; flex-wrap:wrap; gap:1rem;
+  align-items:center; justify-content:space-between;
+}
+footer p { font-size:0.78rem; color:var(--dimmer); }
+.foot-rose { color:var(--rose); font-weight:600; }
+@media(min-width:768px){ footer { padding:1.75rem 3rem; } }
+
+/* ============================================================
+   MOBILE MENU TOGGLE (optional nice touch)
+   ============================================================ */
+.menu-toggle {
+  display:flex; flex-direction:column; gap:5px;
+  background:none; border:none; cursor:pointer; padding:4px;
+}
+.menu-toggle span {
+  display:block; width:22px; height:2px;
+  background:var(--text); border-radius:2px;
+  transition:all 0.3s;
+}
+@media(min-width:768px){ .menu-toggle { display:none; } }
+
+/* ============================================================
+   MOBILE BOTTOM SHEET NAV
+   ============================================================ */
+.mobile-nav {
+  position:fixed; bottom:0; left:0; right:0; z-index:400;
+  background:rgba(13,11,26,0.9);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--rim);
+  display:flex; justify-content:space-around; padding:0.75rem 0;
+}
+@media(min-width:768px){ .mobile-nav { display:none; } }
+.mnav-item {
+  display:flex; flex-direction:column; align-items:center; gap:0.2rem;
+  text-decoration:none; color:var(--dimmer);
+  font-size:0.6rem; font-weight:600; letter-spacing:0.06em;
+  text-transform:uppercase; transition:color 0.2s;
+}
+.mnav-item:hover { color:var(--violet); }
+.mnav-ico { font-size:1.25rem; }
+
+/* body pad for mobile nav */
+@media(max-width:767px){ body { padding-bottom:70px; } }
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+.center { text-align:center; }
+.center .section-sub { margin:0 auto; }
+.center .divider { margin-left:auto; margin-right:auto; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════
+     NAV
+══════════════════════════ -->
+<nav>
+  <div class="logo">SafeBand ◉</div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#solution">Solution</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#impact">Impact</a></li>
+  </ul>
+  <button class="nav-pill" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Protect Now →</button>
+</nav>
+
+<!-- mobile bottom nav -->
+<nav class="mobile-nav">
+  <a class="mnav-item" href="#problem"><span class="mnav-ico">⚠️</span>Problem</a>
+  <a class="mnav-item" href="#solution"><span class="mnav-ico">🛡️</span>Solution</a>
+  <a class="mnav-item" href="#how"><span class="mnav-ico">⚡</span>How</a>
+  <a class="mnav-item" href="#features"><span class="mnav-ico">✨</span>Features</a>
+  <a class="mnav-item" href="#impact"><span class="mnav-ico">🌍</span>Impact</a>
+</nav>
+
+<!-- ══════════════════════════
+     HERO
+══════════════════════════ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-lines"></div>
+  <div class="hero-inner">
+
+    <div class="hero-text">
+      <div class="hero-badge">🛡 Women's Safety Technology</div>
+      <h1 class="hero-title">One Tap.<br><span class="grad-rose">Instant</span><br><span class="grad-violet">Safety.</span></h1>
+      <p class="hero-desc">A smart wearable bracelet that alerts your loved ones and emergency services the moment danger strikes — silently, instantly, always.</p>
+      <div class="hero-btns">
+        <a href="#cta" class="btn-primary">Protect Now →</a>
+        <a href="#how"  class="btn-ghost">See How It Works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-box">
+          <div class="stat-num">3.7B</div>
+          <div class="stat-lbl">Women Globally</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">&lt;3s</div>
+          <div class="stat-lbl">Alert Trigger</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">24/7</div>
+          <div class="stat-lbl">Protection</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="bracelet-stage">
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
+        <div class="orb orb-c"></div>
+        <div class="halo halo-1"></div>
+        <div class="halo halo-2"></div>
+        <div class="halo halo-3"></div>
+        <div class="device-wrap">
+          <svg width="190" height="126" viewBox="0 0 180 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="40" width="160" height="40" rx="20" fill="url(#bG1)"/>
+            <rect x="10" y="40" width="160" height="14" rx="20" fill="rgba(255,255,255,0.05)"/>
+            <rect x="55" y="14" width="70" height="92" rx="15" fill="url(#bG2)"/>
+            <rect x="57" y="16" width="66" height="88" rx="13" fill="url(#bG3)"/>
+            <rect x="63" y="21" width="54" height="78" rx="10" fill="rgba(7,6,15,0.6)"/>
+            <!-- screen details -->
+            <text x="90" y="45" text-anchor="middle" font-size="9" fill="rgba(240,238,255,0.5)" font-family="sans-serif" font-weight="600">SafeBand</text>
+            <!-- status dots -->
+            <circle cx="73" cy="55" r="2.5" fill="#4ade80"/>
+            <circle cx="80" cy="55" r="2.5" fill="#06b6d4"/>
+            <circle cx="100" cy="55" r="2.5" fill="#7c3aed"/>
+            <!-- SOS button -->
+            <circle cx="90" cy="76" r="17" fill="rgba(255,45,107,0.15)" />
+            <circle cx="90" cy="76" r="13" fill="url(#sosG)"/>
+            <text x="90" y="80" text-anchor="middle" font-size="8.5" fill="white" font-weight="bold" font-family="sans-serif">SOS</text>
+            <!-- battery -->
+            <rect x="101" y="27" width="13" height="6" rx="1.5" fill="none" stroke="rgba(240,238,255,0.3)" stroke-width="1"/>
+            <rect x="114" y="29" width="2" height="2" rx="0.5" fill="rgba(240,238,255,0.3)"/>
+            <rect x="102.5" y="28.5" width="9" height="3" rx="0.5" fill="#4ade80"/>
+            <!-- signal bars -->
+            <rect x="64" y="30" width="2" height="4" rx="1" fill="rgba(240,238,255,0.6)"/>
+            <rect x="68" y="28" width="2" height="6" rx="1" fill="rgba(240,238,255,0.6)"/>
+            <rect x="72" y="26" width="2" height="8" rx="1" fill="rgba(240,238,255,0.6)"/>
+            <rect x="76" y="29" width="2" height="5" rx="1" fill="rgba(240,238,255,0.2)"/>
+            <defs>
+              <linearGradient id="bG1" x1="10" y1="40" x2="170" y2="80" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#1a0838"/>
+                <stop offset="100%" stop-color="#08142e"/>
+              </linearGradient>
+              <linearGradient id="bG2" x1="55" y1="14" x2="125" y2="106" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#1c1036"/>
+                <stop offset="100%" stop-color="#0c1230"/>
+              </linearGradient>
+              <linearGradient id="bG3" x1="57" y1="16" x2="123" y2="104" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#0d0826"/>
+                <stop offset="100%" stop-color="#060b1c"/>
+              </linearGradient>
+              <radialGradient id="sosG" cx="40%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#ff6191"/>
+                <stop offset="60%" stop-color="#ff2d6b"/>
+                <stop offset="100%" stop-color="#7c3aed"/>
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+        <!-- floating tags -->
+        <div class="ftag ftag-1">📍 GPS Active</div>
+        <div class="ftag ftag-2">🚨 SOS Ready</div>
+        <div class="ftag ftag-3">🔗 Linked</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════
+     PROBLEM
+══════════════════════════ -->
+<section id="problem">
+  <div class="wrap">
+    <div class="center section-header reveal">
+      <div class="chip">The Challenge</div>
+      <h2 class="section-title">Women Face Real Dangers<br><span class="grad-violet">Every Single Day</span></h2>
+      <div class="divider mx-auto"></div>
+      <p class="section-sub mx-auto">Millions of women worldwide lack immediate safety tools when they need them most.</p>
+    </div>
+    <div class="prob-grid" style="margin-top:3rem;">
+      <div class="prob-card reveal delay-1">
+        <div class="prob-top-line"></div>
+        <span class="prob-icon">⚠️</span>
+        <h3>Women's Safety</h3>
+        <p>1 in 3 women globally experience physical or sexual violence in their lifetime, often without access to immediate help.</p>
+      </div>
+      <div class="prob-card reveal delay-2">
+        <div class="prob-top-line"></div>
+        <span class="prob-icon">🚨</span>
+        <h3>Harassment</h3>
+        <p>Street harassment affects 84% of women before age 17. Most cases go unreported due to fear and lack of support.</p>
+      </div>
+      <div class="prob-card reveal delay-3">
+        <div class="prob-top-line"></div>
+        <span class="prob-icon">🏙️</span>
+        <h3>Unsafe Spaces</h3>
+        <p>Public transport, parking lots, and poorly lit streets remain high-risk zones with no real-time safety infrastructure.</p>
+      </div>
+      <div class="prob-card reveal delay-4">
+        <div class="prob-top-line"></div>
+        <span class="prob-icon">📵</span>
+        <h3>No Instant Help</h3>
+        <p>In moments of danger, reaching for a phone is impossible. Women need a discreet, one-touch solution that always works.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════
+     SOLUTION
+══════════════════════════ -->
+<section id="solution">
+  <div class="wrap">
+    <div class="sol-grid">
+      <div class="reveal-left">
+        <div class="chip">Our Solution</div>
+        <h2 class="section-title">Multi-Press<br><span class="grad-violet">Alert System</span></h2>
+        <div class="divider"></div>
+        <p class="section-sub" style="margin-bottom:2rem;">One bracelet, three levels of escalating protection — the right response for every situation.</p>
+
+        <div class="press-row reveal delay-1">
+          <div class="press-circle p1">1×</div>
+          <div class="press-info">
+            <h4>Alert Family</h4>
+            <p>Silent notification sent to trusted contacts with your exact GPS coordinates.</p>
+          </div>
+          <span class="press-tag tag-free">FREE</span>
+        </div>
+        <div class="press-row reveal delay-2">
+          <div class="press-circle p2">2×</div>
+          <div class="press-info">
+            <h4>Call 999 + Family</h4>
+            <p>Emergency services and family alerted simultaneously with live GPS tracking.</p>
+          </div>
+          <span class="press-tag tag-free">FREE</span>
+        </div>
+        <div class="press-row reveal delay-3">
+          <div class="press-circle p3">3×</div>
+          <div class="press-info">
+            <h4>Full Emergency Protocol</h4>
+            <p>999 + Family + SMS with live GPS link. Audio recording begins instantly.</p>
+          </div>
+          <span class="press-tag tag-premium">PREMIUM</span>
+        </div>
+
+        <div class="demo-widget reveal delay-4">
+          <p class="demo-label">✦ Interactive demo — press the button multiple times</p>
+          <div class="sos-outer">
+            <div class="sos-ring"></div>
+            <div class="sos-ring"></div>
+            <div class="sos-ring"></div>
+            <button class="sos-btn" id="demoBtn" onclick="handlePress()">SOS</button>
+          </div>
+          <div class="demo-status" id="demoStatus">Ready — tap the button</div>
+          <div class="demo-presses" id="demoCount">0 presses</div>
+        </div>
+      </div>
+
+      <div class="reveal-right">
+        <div class="sol-visual">
+          <div class="sol-nodes">
+            <div class="sol-wave"></div>
+            <div class="sol-wave"></div>
+            <div class="sol-wave"></div>
+            <div class="sol-wave"></div>
+            <div class="node-center">
+              <svg width="90" height="60" viewBox="0 0 180 120" fill="none" style="filter:drop-shadow(0 0 18px rgba(124,58,237,0.8))">
+                <rect x="10" y="40" width="160" height="40" rx="20" fill="url(#bG1)"/>
+                <rect x="55" y="14" width="70" height="92" rx="15" fill="url(#bG2)"/>
+                <rect x="57" y="16" width="66" height="88" rx="13" fill="url(#bG3)"/>
+                <circle cx="90" cy="65" r="16" fill="url(#sosG)"/>
+                <text x="90" y="69.5" text-anchor="middle" font-size="8.5" fill="white" font-weight="bold" font-family="sans-serif">SOS</text>
+              </svg>
+              <span style="font-size:0.65rem;color:var(--dimmer);">SafeBand</span>
+            </div>
+            <div class="sol-node sn-1">☁ Family Notified</div>
+            <div class="sol-node sn-2">🚨 999 Alert</div>
+            <div class="sol-node sn-3">📍 GPS Active</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════
+     HOW IT WORKS
+══════════════════════════ -->
+<section id="how">
+  <div class="wrap">
+    <div class="center section-header reveal">
+      <div class="chip">Process</div>
+      <h2 class="section-title">How <span class="grad-violet">SafeBand</span> Works</h2>
+      <div class="divider mx-auto"></div>
+    </div>
+
+    <div class="flow-wrap" style="gap:0;margin-bottom:5rem;">
+      <div class="flow-step reveal delay-1">
+        <div class="flow-icon-box">👆</div>
+        <div class="flow-lbl">Button Press</div>
+      </div>
+      <div class="flow-arrow reveal delay-1"><span>→</span></div>
+      <div class="flow-step reveal delay-2">
+        <div class="flow-icon-box">🔢</div>
+        <div class="flow-lbl">Detect Count</div>
+      </div>
+      <div class="flow-arrow reveal delay-2"><span>→</span></div>
+      <div class="flow-step reveal delay-3">
+        <div class="flow-icon-box">⚡</div>
+        <div class="flow-lbl">Trigger Level</div>
+      </div>
+      <div class="flow-arrow reveal delay-3"><span>→</span></div>
+      <div class="flow-step reveal delay-4">
+        <div class="flow-icon-box">📍</div>
+        <div class="flow-lbl">GPS Activate</div>
+      </div>
+      <div class="flow-arrow reveal delay-4"><span>→</span></div>
+      <div class="flow-step reveal delay-5">
+        <div class="flow-icon-box">📲</div>
+        <div class="flow-lbl">Notify Contacts</div>
+      </div>
+    </div>
+
+    <!-- Plans -->
+    <div class="center reveal" style="margin-bottom:3rem;">
+      <div class="chip">Plans</div>
+      <h2 class="section-title">Choose Your <span class="grad-violet">Protection</span></h2>
+      <div class="divider mx-auto"></div>
+    </div>
+    <div class="plans-grid">
+      <div class="plan-card reveal delay-1">
+        <div class="plan-name">Free</div>
+        <div class="plan-sub">Basic protection for everyone</div>
+        <div class="plan-price"><span class="cur">Tk</span>0<span class="mo">/mo</span></div>
+        <ul class="feat-list">
+          <li>1 &amp; 2 press alerts</li>
+          <li>Basic GPS location sharing</li>
+          <li>Family notifications</li>
+          <li>Emergency call to 999</li>
+        </ul>
+        <button class="plan-btn">Get Started Free</button>
+      </div>
+      <div class="plan-card hot reveal delay-2">
+        <div class="plan-badge">POPULAR</div>
+        <div class="plan-name grad-violet">Premium</div>
+        <div class="plan-sub">Full protection suite</div>
+        <div class="plan-price"><span class="cur">Tk</span>499<span class="mo">/mo</span></div>
+        <ul class="feat-list">
+          <li>All Free features</li>
+          <li>3-press full emergency protocol</li>
+          <li>SMS with live GPS link</li>
+          <li>Audio recording &amp; cloud storage</li>
+          <li>Fake Call feature</li>
+          <li>Geo-fence safety alerts</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="plan-btn">Start Premium</button>
+      </div>
+      <div class="plan-card reveal delay-3">
+        <div class="plan-name">Institutional</div>
+        <div class="plan-sub">Schools, orgs &amp; enterprises</div>
+        <div class="plan-price" style="font-size:1.5rem;padding-top:0.4rem;">Custom</div>
+        <ul class="feat-list">
+          <li>All Premium features</li>
+          <li>Admin dashboard</li>
+          <li>Fleet device management</li>
+          <li>Real-time monitoring</li>
+          <li>Analytics &amp; reporting</li>
+          <li>24/7 dedicated support</li>
+        </ul>
+        <button class="plan-btn">Contact Sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════
+     FEATURES
+══════════════════════════ -->
+<section id="features">
+  <div class="wrap">
+    <div class="center section-header reveal">
+      <div class="chip">Capabilities</div>
+      <h2 class="section-title">Intelligent <span class="grad-violet">Features</span></h2>
+      <div class="divider mx-auto"></div>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card reveal delay-1">
+        <div class="feat-ico">🔕</div>
+        <div>
+          <h4>Silent Mode</h4>
+          <p>Trigger alerts with zero sound or vibration — perfect for high-tension situations.</p>
+        </div>
+      </div>
+      <div class="feat-card reveal delay-2">
+        <div class="feat-ico">📞</div>
+        <div>
+          <h4>Fake Call</h4>
+          <p>Generate a realistic incoming call to safely exit any uncomfortable situation.</p>
+        </div>
+      </div>
+      <div class="feat-card reveal delay-3">
+        <div class="feat-ico">🔋</div>
+        <div>
+          <h4>Low Battery Alert</h4>
+          <p>Notified before power runs out so your safety net is always active and ready.</p>
+        </div>
+      </div>
+      <div class="feat-card reveal delay-4">
+        <div class="feat-ico">🗺️</div>
+        <div>
+          <h4>Geo-Fence Alerts</h4>
+          <p>Set safety zones. Get notified when you — or a loved one — leaves the area.</p>
+        </div>
+      </div>
+      <div class="feat-card reveal delay-5">
+        <div class="feat-ico">🔆</div>
+        <div>
+          <h4>SOS LED Flash</h4>
+          <p>Bright flashing beacon on the bracelet to attract attention in dark or remote areas.</p>
+        </div>
+      </div>
+      <div class="feat-card reveal delay-6">
+        <div class="feat-ico">🛰️</div>
+        <div>
+          <h4>Live GPS Tracking</h4>
+          <p>Real-time location streaming to your emergency contacts during any active alert.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════
+     IMPACT
+══════════════════════════ -->
+<section id="impact">
+  <div class="wrap">
+    <div class="impact-grid">
+      <div class="reveal-left">
+        <div class="chip">Social Impact</div>
+        <h2 class="section-title">Empowering Women,<br><span class="grad-rose">Changing Lives</span></h2>
+        <div class="divider"></div>
+        <div class="sdg-pill">♀ Aligned with UN SDG 5 — Gender Equality</div>
+        <ul class="vision-ul">
+          <li><div class="vision-ico">🤖</div>AI-powered danger detection using environmental audio patterns</li>
+          <li><div class="vision-ico">🚓</div>Direct police integration for sub-60-second emergency response</li>
+          <li><div class="vision-ico">🌍</div>Global expansion to 50+ countries by 2027</li>
+          <li><div class="vision-ico">🏫</div>Campus and school safety programs worldwide</li>
+        </ul>
+      </div>
+      <div class="reveal-right">
+        <div class="counters">
+          <div class="counter-card">
+            <div class="counter-val" data-target="12000" id="c1">0</div>
+            <div class="counter-lbl">Lives Protected</div>
+          </div>
+          <div class="counter-card">
+            <div class="counter-val" data-target="8500" id="c2">0</div>
+            <div class="counter-lbl">Devices Active</div>
+          </div>
+          <div class="counter-card">
+            <div class="counter-val" data-target="98" id="c3">0</div>
+            <div class="counter-lbl">% Response Rate</div>
+          </div>
+          <div class="counter-card">
+            <div class="counter-val" data-target="35" id="c4">0</div>
+            <div class="counter-lbl">Countries Reached</div>
+          </div>
+        </div>
+        <div class="dash-preview">
+          <div class="dash-header">Live Dashboard Preview</div>
+          <div class="dash-row">
+            <div class="dash-kpi dk-pink">
+              <div class="kpi-lbl">Active Alerts</div>
+              <div class="kpi-val pink">3</div>
+            </div>
+            <div class="dash-kpi dk-cyan">
+              <div class="kpi-lbl">Devices Online</div>
+              <div class="kpi-val blue">247</div>
+            </div>
+          </div>
+          <div class="dash-rows">
+            <div class="dash-item"><span>GPS Lock</span><span class="col-blue">✓ Active</span></div>
+            <div class="dash-item"><span>Network Status</span><span class="col-green">● Online</span></div>
+            <div class="dash-item"><span>Last Alert</span><span>2 min ago</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════
+     CTA
+══════════════════════════ -->
+<section id="cta">
+  <div class="cta-glow"></div>
+  <div class="wrap center reveal">
+    <div class="chip" style="margin:0 auto 1.25rem;">Join SafeBand</div>
+    <h2 class="cta-title">Ready to Feel<br><span class="grad-rose">Safe?</span></h2>
+    <p class="cta-sub">Join thousands of women who trust SafeBand to keep them protected every day.</p>
+    <div class="cta-btns">
+      <a href="#" class="btn-primary" style="font-size:1.05rem;padding:1.1rem 2.5rem;">Protect Now →</a>
+      <a href="#problem" class="btn-ghost" style="font-size:1.05rem;padding:1.1rem 2.5rem;">Learn More</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════
+     FOOTER
+══════════════════════════ -->
+<footer>
+  <div class="logo">SafeBand ◉</div>
+  <p>© 2025 SafeBand Technologies. Built for the Hult Prize.</p>
+  <p class="foot-rose">♀ Empowering Women Worldwide</p>
+</footer>
+
+<script>
+/* ── Scroll reveal ── */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el => io.observe(el));
+
+/* ── Animated counters ── */
+const cio = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    const el = e.target, tgt = +el.dataset.target;
+    const dur = 2200, step = tgt / (dur/16);
+    let cur = 0;
+    const t = setInterval(() => {
+      cur = Math.min(cur + step, tgt);
+      el.textContent = Math.floor(cur).toLocaleString();
+      if(cur >= tgt) clearInterval(t);
+    }, 16);
+    cio.unobserve(el);
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('[data-target]').forEach(el => cio.observe(el));
+
+/* ── Demo SOS button ── */
+let count = 0, timer = null;
+const msgs = [
+  { text:'📲 Calling Family...', color:'var(--cyan)' },
+  { text:'🚨 Calling 999 + Family!', color:'var(--violet)' },
+  { text:'🆘 FULL EMERGENCY PROTOCOL!', color:'var(--rose)' }
+];
+
+function handlePress() {
+  const btn = document.getElementById('demoBtn');
+  btn.classList.remove('pressed');
+  void btn.offsetWidth;
+  btn.classList.add('pressed');
+
+  count = count >= 3 ? 1 : count + 1;
+  const stat = document.getElementById('demoStatus');
+  const cnt  = document.getElementById('demoCount');
+  const m = msgs[count - 1];
+  stat.textContent = m.text;
+  stat.style.color = m.color;
+  cnt.textContent = count + ' press' + (count > 1 ? 'es' : '');
+
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    count = 0;
+    stat.textContent = 'Ready — tap the button';
+    stat.style.color = '';
+    cnt.textContent = '0 presses';
+  }, 3200);
+}
+</script>
+</body>
+</html>
