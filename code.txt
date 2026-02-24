@@ -1,551 +1,192 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <time.h>
-#include <ctype.h>
 
-#define MAX_CUSTOMERS 100
-#define MAX_NAME_LEN  50
-#define MAX_HISTORY   12
-#define DATA_FILE     "electricity_records.dat"
+void line() { printf("----------------------------------------\n"); }
 
-typedef struct {
-    int    month;
-    int    year;
-    float  units;
-    float  total_bill;
-} BillRecord;
-
-typedef struct {
-    int        customer_id;
-    char       name[MAX_NAME_LEN];
-    char       address[100];
-    char       meter_number[20];
-    char       connection_type[20];
-    float      previous_reading;
-    float      current_reading;
-    BillRecord history[MAX_HISTORY];
-    int        history_count;
-} Customer;
-
-void clear_screen() {
-#ifdef _WIN32
-    system("cls");
-#else
-    system("clear");
-#endif
+float calcBill(float units) {
+    if (units <= 100) return units * 1.50;
+    if (units <= 200) return 150  + (units - 100) * 2.50;
+    if (units <= 300) return 400  + (units - 200) * 4.00;
+    if (units <= 500) return 800  + (units - 300) * 6.00;
+    return              2000 + (units - 500) * 9.00;
 }
 
-void print_line(char ch, int len) {
-    for (int i = 0; i < len; i++) putchar(ch);
-    putchar('\n');
+float getTax(char *type) {
+    if (strcmp(type, "2") == 0) return 0.08;
+    if (strcmp(type, "3") == 0) return 0.10;
+    return 0.05;
 }
 
-void print_centered(const char *text, int width) {
-    int len = strlen(text);
-    int pad = (width - len) / 2;
-    for (int i = 0; i < pad; i++) putchar(' ');
-    printf("%s\n", text);
+float getRent(char *type) {
+    if (strcmp(type, "2") == 0) return 75;
+    if (strcmp(type, "3") == 0) return 150;
+    return 30;
 }
 
-void print_header() {
-    printf("\n");
-    print_line('=', 60);
-    print_centered("ADVANCED ELECTRICITY BILL MANAGEMENT SYSTEM", 60);
-    print_centered("Power Distribution Corporation", 60);
-    print_line('=', 60);
-    time_t t = time(NULL);
-    struct tm *tm_info = localtime(&t);
-    char date_buf[30];
-    strftime(date_buf, sizeof(date_buf), "Date: %d-%m-%Y   Time: %H:%M:%S", tm_info);
-    print_centered(date_buf, 60);
-    print_line('=', 60);
-    printf("\n");
+void generateBill() {
+    int id;
+    char name[50], type[5];
+    float prev, curr;
+
+    printf("\n  Customer ID   : "); scanf("%d", &id);
+    printf("  Name          : "); scanf(" %[^\n]", name);
+    printf("  Prev Reading  : "); scanf("%f", &prev);
+    printf("  Curr Reading  : "); scanf("%f", &curr);
+
+    if (curr < prev) { printf("  ERROR: Invalid reading!\n"); return; }
+
+    printf("  Type (1=Residential 2=Commercial 3=Industrial): ");
+    scanf(" %s", type);
+
+    float units    = curr - prev;
+    float base     = calcBill(units);
+    float surcharge = (base > 300) ? base * 0.15 : (base > 100) ? base * 0.10 : 0;
+    float fuel     = units * 0.15;
+    float rent     = getRent(type);
+    float subtotal = base + surcharge + fuel + rent;
+    float tax      = subtotal * getTax(type);
+    float total    = subtotal + tax;
+
+    printf("\n"); line();
+    printf("  BILL SUMMARY - Customer: %s (ID: %d)\n", name, id);
+    line();
+    printf("  Units Consumed : %.2f kWh\n", units);
+    printf("  Base Charge    : $%.2f\n", base);
+    printf("  Surcharge      : $%.2f\n", surcharge);
+    printf("  Fuel Adj.      : $%.2f\n", fuel);
+    printf("  Meter Rent     : $%.2f\n", rent);
+    printf("  Tax            : $%.2f\n", tax);
+    line();
+    printf("  TOTAL DUE      : $%.2f\n", total);
+    line();
+    if      (units <= 100) printf("  Status: LOW usage. Great!\n");
+    else if (units <= 300) printf("  Status: MODERATE usage.\n");
+    else                   printf("  Status: HIGH usage. Save energy!\n");
 }
 
-void print_menu() {
-    print_line('-', 60);
-    print_centered("MAIN MENU", 60);
-    print_line('-', 60);
-    printf("  [1]  Generate New Bill\n");
-    printf("  [2]  Multi-Customer Bulk Billing\n");
-    printf("  [3]  View Bill History\n");
-    printf("  [4]  Search Customer Record\n");
-    printf("  [5]  Consumption Analytics & Graph\n");
-    printf("  [6]  Slab Rate Information\n");
-    printf("  [7]  Payment Due Calculator\n");
-    printf("  [8]  Energy Saving Tips\n");
-    printf("  [9]  Export Report to File\n");
-    printf("  [0]  Exit\n");
-    print_line('-', 60);
-    printf("  Enter your choice: ");
-}
-
-float calculate_base_bill(float units, float *s1, float *s2, float *s3, float *s4, float *s5) {
-    *s1 = *s2 = *s3 = *s4 = *s5 = 0;
-    if (units <= 100) {
-        *s1 = units * 1.50f;
-    } else if (units <= 200) {
-        *s1 = 100 * 1.50f;
-        *s2 = (units - 100) * 2.50f;
-    } else if (units <= 300) {
-        *s1 = 100 * 1.50f;
-        *s2 = 100 * 2.50f;
-        *s3 = (units - 200) * 4.00f;
-    } else if (units <= 500) {
-        *s1 = 100 * 1.50f;
-        *s2 = 100 * 2.50f;
-        *s3 = 100 * 4.00f;
-        *s4 = (units - 300) * 6.00f;
-    } else {
-        *s1 = 100 * 1.50f;
-        *s2 = 100 * 2.50f;
-        *s3 = 100 * 4.00f;
-        *s4 = 200 * 6.00f;
-        *s5 = (units - 500) * 9.00f;
-    }
-    return *s1 + *s2 + *s3 + *s4 + *s5;
-}
-
-float get_surcharge_rate(float bill) {
-    if (bill > 300) return 0.15f;
-    if (bill > 100) return 0.10f;
-    return 0.0f;
-}
-
-float get_fuel_adjustment(float units) {
-    return units * 0.15f;
-}
-
-float get_meter_rent(const char *conn_type) {
-    if (strcmp(conn_type, "Commercial") == 0) return 75.0f;
-    if (strcmp(conn_type, "Industrial") == 0) return 150.0f;
-    return 30.0f;
-}
-
-float get_tax_rate(const char *conn_type) {
-    if (strcmp(conn_type, "Commercial") == 0) return 0.08f;
-    if (strcmp(conn_type, "Industrial") == 0) return 0.10f;
-    return 0.05f;
-}
-
-void print_detailed_bill(Customer *c, int month, int year) {
-    float units = c->current_reading - c->previous_reading;
-    float s1, s2, s3, s4, s5;
-    float base_bill     = calculate_base_bill(units, &s1, &s2, &s3, &s4, &s5);
-    float surcharge_rt  = get_surcharge_rate(base_bill);
-    float surcharge     = base_bill * surcharge_rt;
-    float fuel_adj      = get_fuel_adjustment(units);
-    float meter_rent    = get_meter_rent(c->connection_type);
-    float subtotal      = base_bill + surcharge + fuel_adj + meter_rent;
-    float tax_rate      = get_tax_rate(c->connection_type);
-    float tax           = subtotal * tax_rate;
-    float total         = subtotal + tax;
-
-    const char *months[] = {"","January","February","March","April","May","June",
-                             "July","August","September","October","November","December"};
-
-    printf("\n");
-    print_line('*', 60);
-    print_centered("ELECTRICITY BILL / TAX INVOICE", 60);
-    print_centered("Power Distribution Corporation", 60);
-    printf("  Helpline: 01734-345353   |   www.roja.supplypower\n");
-    print_line('*', 60);
-
-    printf("  Bill Month   : %s %d\n", months[month], year);
-    printf("  Bill Date    : ");
-    time_t t = time(NULL);
-    struct tm *tm_info = localtime(&t);
-    char date_buf[20];
-    strftime(date_buf, sizeof(date_buf), "%d-%m-%Y", tm_info);
-    printf("%s\n", date_buf);
-
-    char due_buf[20];
-    struct tm due = *tm_info;
-    due.tm_mday += 15;
-    mktime(&due);
-    strftime(due_buf, sizeof(due_buf), "%d-%m-%Y", &due);
-    printf("  Due Date     : %s\n", due_buf);
-    print_line('-', 60);
-
-    printf("  Customer ID  : %d\n", c->customer_id);
-    printf("  Name         : %s\n", c->name);
-    printf("  Address      : %s\n", c->address);
-    printf("  Meter No.    : %s\n", c->meter_number);
-    printf("  Conn. Type   : %s\n", c->connection_type);
-    print_line('-', 60);
-
-    printf("  Previous Reading : %8.2f kWh\n", c->previous_reading);
-    printf("  Current Reading  : %8.2f kWh\n", c->current_reading);
-    printf("  Units Consumed   : %8.2f kWh\n", units);
-    print_line('-', 60);
-
-    printf("  %-35s %10s\n", "CHARGE DESCRIPTION", "AMOUNT");
-    print_line('-', 60);
-
-    if (s1 > 0) {
-        float u = (units < 100) ? units : 100;
-        printf("  Slab 1: %5.0f units x $1.50          %10.2f\n", u, s1);
-    }
-    if (s2 > 0) {
-        float u = (units < 200) ? units - 100 : 100;
-        printf("  Slab 2: %5.0f units x $2.50          %10.2f\n", u, s2);
-    }
-    if (s3 > 0) {
-        float u = (units < 300) ? units - 200 : 100;
-        printf("  Slab 3: %5.0f units x $4.00          %10.2f\n", u, s3);
-    }
-    if (s4 > 0) {
-        float u = (units < 500) ? units - 300 : 200;
-        printf("  Slab 4: %5.0f units x $6.00          %10.2f\n", u, s4);
-    }
-    if (s5 > 0) {
-        printf("  Slab 5: %5.0f units x $9.00          %10.2f\n", units - 500, s5);
-    }
-
-    printf("  %-35s %10.2f\n", "  Energy Charges (Base)", base_bill);
-    printf("  Surcharge (%.0f%%)                    %10.2f\n", surcharge_rt * 100, surcharge);
-    printf("  Fuel Adjustment (%.2f/unit)         %10.2f\n", 0.15f, fuel_adj);
-    printf("  Meter Rent                          %10.2f\n", meter_rent);
-    print_line('-', 60);
-    printf("  %-35s %10.2f\n", "  Sub Total", subtotal);
-    printf("  Tax (%.0f%%)                          %10.2f\n", tax_rate * 100, tax);
-    print_line('=', 60);
-    printf("  %-35s %10.2f\n", "  TOTAL AMOUNT DUE (USD)", total);
-    print_line('=', 60);
-
-    if (units <= 100)
-        printf("  Status: [LOW]      Excellent consumption! Keep it up.\n");
-    else if (units <= 300)
-        printf("  Status: [MODERATE] Average consumption level.\n");
-    else if (units <= 500)
-        printf("  Status: [HIGH]     Consider reducing usage.\n");
-    else
-        printf("  Status: [CRITICAL] Very high usage. Immediate action advised.\n");
-
-    printf("  Avg Daily Use  : %.2f kWh/day\n", units / 30.0f);
-    printf("  Cost Per Unit  : $%.4f\n", total / units);
-    print_line('*', 60);
-    printf("\n");
-}
-
-void generate_bill() {
-    Customer c;
-    int month, year;
-
-    printf("\n");
-    print_line('-', 60);
-    print_centered("GENERATE NEW BILL", 60);
-    print_line('-', 60);
-
-    printf("  Customer ID       : "); scanf("%d", &c.customer_id);
-    printf("  Customer Name     : "); scanf(" %[^\n]", c.name);
-    printf("  Address           : "); scanf(" %[^\n]", c.address);
-    printf("  Meter Number      : "); scanf(" %s", c.meter_number);
-    printf("  Connection Type\n");
-    printf("  (Residential/Commercial/Industrial): ");
-    scanf(" %s", c.connection_type);
-    printf("  Previous Reading  : "); scanf("%f", &c.previous_reading);
-    printf("  Current Reading   : "); scanf("%f", &c.current_reading);
-
-    while (c.current_reading < c.previous_reading) {
-        printf("  [ERROR] Current reading cannot be less than previous reading.\n");
-        printf("  Current Reading   : "); scanf("%f", &c.current_reading);
-    }
-
-    printf("  Billing Month (1-12): "); scanf("%d", &month);
-    printf("  Billing Year        : "); scanf("%d", &year);
-
-    print_detailed_bill(&c, month, year);
-}
-
-void bulk_billing() {
+void bulkBilling() {
     int n;
-    printf("\n  Number of customers: "); scanf("%d", &n);
-    if (n <= 0 || n > MAX_CUSTOMERS) {
-        printf("  Invalid count.\n"); return;
-    }
-
-    Customer customers[MAX_CUSTOMERS];
-    float totals[MAX_CUSTOMERS];
-    float grand_total = 0;
-    int month, year;
-
-    printf("  Billing Month (1-12): "); scanf("%d", &month);
-    printf("  Billing Year        : "); scanf("%d", &year);
-
+    printf("\n  How many customers? "); scanf("%d", &n);
+    float grand = 0;
+    printf("\n  %-5s %-15s %10s %10s\n", "ID", "Name", "Units", "Bill($)");
+    line();
     for (int i = 0; i < n; i++) {
-        printf("\n  --- Customer %d of %d ---\n", i + 1, n);
-        printf("  Customer ID    : "); scanf("%d", &customers[i].customer_id);
-        printf("  Name           : "); scanf(" %[^\n]", customers[i].name);
-        strcpy(customers[i].address, "N/A");
-        strcpy(customers[i].meter_number, "N/A");
-        printf("  Connection Type: "); scanf(" %s", customers[i].connection_type);
-        printf("  Prev Reading   : "); scanf("%f", &customers[i].previous_reading);
-        printf("  Curr Reading   : "); scanf("%f", &customers[i].current_reading);
-
-        float units = customers[i].current_reading - customers[i].previous_reading;
-        float s1, s2, s3, s4, s5;
-        float base  = calculate_base_bill(units, &s1, &s2, &s3, &s4, &s5);
-        float sur   = base * get_surcharge_rate(base);
-        float fuel  = get_fuel_adjustment(units);
-        float rent  = get_meter_rent(customers[i].connection_type);
-        float sub   = base + sur + fuel + rent;
-        float tax   = sub * get_tax_rate(customers[i].connection_type);
-        totals[i]   = sub + tax;
-        grand_total += totals[i];
+        int id; char name[50]; float prev, curr;
+        printf("  Customer %d ID   : ", i+1); scanf("%d", &id);
+        printf("  Name            : "); scanf(" %[^\n]", name);
+        printf("  Prev / Curr kWh : "); scanf("%f %f", &prev, &curr);
+        float units = curr - prev;
+        float bill  = calcBill(units) * 1.15;
+        grand += bill;
+        printf("  %-5d %-15s %10.2f %10.2f\n", id, name, units, bill);
     }
-
-    printf("\n");
-    print_line('=', 60);
-    print_centered("BULK BILLING SUMMARY", 60);
-    print_line('=', 60);
-    printf("  %-5s %-20s %10s %10s\n", "ID", "Name", "Units", "Bill($)");
-    print_line('-', 60);
-    for (int i = 0; i < n; i++) {
-        float units = customers[i].current_reading - customers[i].previous_reading;
-        printf("  %-5d %-20s %10.2f %10.2f\n",
-               customers[i].customer_id, customers[i].name, units, totals[i]);
-    }
-    print_line('=', 60);
-    printf("  %-5s %-20s %10s %10.2f\n", "", "GRAND TOTAL", "", grand_total);
-    print_line('=', 60);
-    printf("  Total Customers : %d\n", n);
-    printf("  Average Bill    : $%.2f\n", grand_total / n);
+    line();
+    printf("  GRAND TOTAL: $%.2f  |  Avg: $%.2f\n", grand, grand / n);
 }
 
-void consumption_graph() {
-    float monthly_units[12];
-    int year;
-    printf("\n  Enter Customer Name : ");
-    char name[MAX_NAME_LEN];
-    scanf(" %[^\n]", name);
-    printf("  Enter Year          : "); scanf("%d", &year);
-
-    printf("  Enter monthly units consumed (Jan to Dec):\n");
-    const char *months[] = {"Jan","Feb","Mar","Apr","May","Jun",
-                             "Jul","Aug","Sep","Oct","Nov","Dec"};
-    float max_units = 0;
-    for (int i = 0; i < 12; i++) {
-        printf("  %s : ", months[i]);
-        scanf("%f", &monthly_units[i]);
-        if (monthly_units[i] > max_units) max_units = monthly_units[i];
-    }
-
-    float total = 0;
-    for (int i = 0; i < 12; i++) total += monthly_units[i];
-
-    printf("\n");
-    print_line('=', 60);
-    printf("  CONSUMPTION GRAPH - %s (%d)\n", name, year);
-    print_line('=', 60);
-    printf("  %-4s | %-30s | %s\n", "Mon", "Bar Chart (each # = 10 units)", "kWh");
-    print_line('-', 60);
-
-    for (int i = 0; i < 12; i++) {
-        int bars = (int)(monthly_units[i] / 10);
-        if (bars > 30) bars = 30;
-        printf("  %-4s |", months[i]);
-        for (int j = 0; j < bars; j++) putchar('#');
-        for (int j = bars; j < 30; j++) putchar(' ');
-        printf("| %.1f\n", monthly_units[i]);
-    }
-
-    print_line('=', 60);
-    printf("  Total Annual Consumption : %.2f kWh\n", total);
-    printf("  Monthly Average          : %.2f kWh\n", total / 12.0f);
-    printf("  Peak Month               : ");
-    for (int i = 0; i < 12; i++) {
-        if (monthly_units[i] == max_units) { printf("%s\n", months[i]); break; }
-    }
-    print_line('=', 60);
+void slabInfo() {
+    printf("\n"); line();
+    printf("  SLAB RATES\n"); line();
+    printf("  0   - 100 units : $1.50/unit\n");
+    printf("  101 - 200 units : $2.50/unit\n");
+    printf("  201 - 300 units : $4.00/unit\n");
+    printf("  301 - 500 units : $6.00/unit\n");
+    printf("  Above 500 units : $9.00/unit\n");
+    line();
+    printf("  Surcharge : 10%% (bill>$100)  15%% (bill>$300)\n");
+    printf("  Fuel Adj  : $0.15 per unit\n");
+    printf("  Meter Rent: $30 / $75 / $150 (Res/Com/Ind)\n");
+    printf("  Tax       : 5%% / 8%% / 10%%  (Res/Com/Ind)\n");
+    line();
 }
 
-void slab_info() {
-    printf("\n");
-    print_line('=', 60);
-    print_centered("CURRENT TARIFF / SLAB RATE INFORMATION", 60);
-    print_line('=', 60);
-    printf("  %-20s %-15s %s\n", "Units (kWh)", "Rate ($/unit)", "Description");
-    print_line('-', 60);
-    printf("  %-20s %-15s %s\n", "0   – 100",  "$1.50", "Lifeline / Low Usage");
-    printf("  %-20s %-15s %s\n", "101 – 200",  "$2.50", "Standard Residential");
-    printf("  %-20s %-15s %s\n", "201 – 300",  "$4.00", "Above Average");
-    printf("  %-20s %-15s %s\n", "301 – 500",  "$6.00", "High Consumption");
-    printf("  %-20s %-15s %s\n", "Above 500",  "$9.00", "Premium / Industrial");
-    print_line('-', 60);
-    printf("  %-20s %s\n", "Surcharge:", "10%% if base bill > $100");
-    printf("  %-20s %s\n", "",           "15%% if base bill > $300");
-    printf("  %-20s %s\n", "Fuel Adj.:", "$0.15 per unit consumed");
-    printf("  %-20s %s\n", "Meter Rent:", "Residential $30 | Commercial $75 | Industrial $150");
-    printf("  %-20s %s\n", "Tax:",        "Residential 5%% | Commercial 8%% | Industrial 10%%");
-    print_line('=', 60);
+void paymentDue() {
+    float bill, days;
+    printf("\n  Bill Amount  : $"); scanf("%f", &bill);
+    printf("  Days Overdue : ");   scanf("%f", &days);
+    float rate = (days > 60) ? 0.10 : (days > 30) ? 0.05 : (days > 15) ? 0.02 : 0;
+    float penalty = bill * rate;
+    printf("\n"); line();
+    printf("  Original Bill  : $%.2f\n", bill);
+    printf("  Penalty (%.0f%%) : $%.2f\n", rate * 100, penalty);
+    printf("  TOTAL DUE      : $%.2f\n", bill + penalty);
+    line();
+    if (days == 0)      printf("  ON TIME - No penalty.\n");
+    else if (days <= 15) printf("  GRACE PERIOD - Pay now!\n");
+    else                 printf("  OVERDUE - %.0f%% penalty applied.\n", rate * 100);
 }
 
-void payment_due_calculator() {
-    float bill_amount, days_overdue;
-    printf("\n  Total Bill Amount  : $"); scanf("%f", &bill_amount);
-    printf("  Days Overdue       : ");    scanf("%f", &days_overdue);
+void exportBill() {
+    int id, month, year;
+    char name[50], type[5];
+    float prev, curr;
 
-    float penalty_rate = 0.0f;
-    if (days_overdue > 60)      penalty_rate = 0.10f;
-    else if (days_overdue > 30) penalty_rate = 0.05f;
-    else if (days_overdue > 15) penalty_rate = 0.02f;
+    printf("\n  ID     : "); scanf("%d", &id);
+    printf("  Name   : "); scanf(" %[^\n]", name);
+    printf("  Prev / Curr Reading: "); scanf("%f %f", &prev, &curr);
+    printf("  Type (1/2/3): "); scanf(" %s", type);
+    printf("  Month / Year: "); scanf("%d %d", &month, &year);
 
-    float penalty = bill_amount * penalty_rate;
-    float total   = bill_amount + penalty;
+    float units    = curr - prev;
+    float base     = calcBill(units);
+    float sur      = (base > 300) ? base*0.15 : (base > 100) ? base*0.10 : 0;
+    float fuel     = units * 0.15;
+    float rent     = getRent(type);
+    float sub      = base + sur + fuel + rent;
+    float tax      = sub * getTax(type);
+    float total    = sub + tax;
 
-    printf("\n");
-    print_line('-', 60);
-    print_centered("PAYMENT DUE STATEMENT", 60);
-    print_line('-', 60);
-    printf("  Original Bill Amount : $%.2f\n", bill_amount);
-    printf("  Days Overdue         : %.0f days\n", days_overdue);
-    printf("  Late Payment Penalty : %.0f%% = $%.2f\n", penalty_rate * 100, penalty);
-    print_line('-', 60);
-    printf("  TOTAL AMOUNT DUE     : $%.2f\n", total);
-    print_line('-', 60);
-    if (days_overdue == 0)
-        printf("  Status: ON TIME - No penalty applied.\n");
-    else if (days_overdue <= 15)
-        printf("  Status: GRACE PERIOD - Pay immediately to avoid penalty.\n");
-    else
-        printf("  Status: OVERDUE - Penalty of %.0f%% applied.\n", penalty_rate * 100);
-    print_line('-', 60);
-}
+    char fname[40];
+    snprintf(fname, sizeof(fname), "bill_%d_%d_%d.txt", id, month, year);
+    FILE *fp = fopen(fname, "w");
+    if (!fp) { printf("  ERROR: Cannot create file.\n"); return; }
 
-void energy_saving_tips() {
-    printf("\n");
-    print_line('=', 60);
-    print_centered("ENERGY SAVING TIPS", 60);
-    print_line('=', 60);
-    printf("  1.  Switch to LED bulbs — saves up to 80%% energy vs. incandescent.\n");
-    printf("  2.  Set AC thermostat to 24-26 C for optimal efficiency.\n");
-    printf("  3.  Unplug devices on standby — they still draw power.\n");
-    printf("  4.  Use washing machines & dishwashers with full loads only.\n");
-    printf("  5.  Install ceiling fans to reduce AC dependency.\n");
-    printf("  6.  Use natural light during daytime whenever possible.\n");
-    printf("  7.  Service AC units regularly for peak performance.\n");
-    printf("  8.  Refrigerator coils: clean them every 6 months.\n");
-    printf("  9.  Use power strips with switches for electronics clusters.\n");
-    printf("  10. Solar panels can reduce your bill by 40-70%% annually.\n");
-    print_line('-', 60);
-    printf("  Estimated Savings Guide:\n");
-    printf("  %-30s %s\n", "Action", "Monthly Saving (approx.)");
-    print_line('-', 60);
-    printf("  %-30s %s\n", "Switch to LED (10 bulbs)",       "$8 – $12");
-    printf("  %-30s %s\n", "AC at 26C vs 18C",               "$15 – $25");
-    printf("  %-30s %s\n", "Fix standby appliances",         "$5 – $10");
-    printf("  %-30s %s\n", "Full-load laundry only",         "$3 – $6");
-    print_line('=', 60);
-}
-
-void export_report() {
-    Customer c;
-    int month, year;
-
-    printf("\n  Customer ID       : "); scanf("%d", &c.customer_id);
-    printf("  Customer Name     : "); scanf(" %[^\n]", c.name);
-    printf("  Address           : "); scanf(" %[^\n]", c.address);
-    printf("  Meter Number      : "); scanf(" %s", c.meter_number);
-    printf("  Connection Type   : "); scanf(" %s", c.connection_type);
-    printf("  Previous Reading  : "); scanf("%f", &c.previous_reading);
-    printf("  Current Reading   : "); scanf("%f", &c.current_reading);
-    printf("  Billing Month     : "); scanf("%d", &month);
-    printf("  Billing Year      : "); scanf("%d", &year);
-
-    float units = c.current_reading - c.previous_reading;
-    float s1, s2, s3, s4, s5;
-    float base    = calculate_base_bill(units, &s1, &s2, &s3, &s4, &s5);
-    float sur     = base * get_surcharge_rate(base);
-    float fuel    = get_fuel_adjustment(units);
-    float rent    = get_meter_rent(c.connection_type);
-    float sub     = base + sur + fuel + rent;
-    float tax     = sub * get_tax_rate(c.connection_type);
-    float total   = sub + tax;
-
-    const char *months[] = {"","January","February","March","April","May","June",
-                             "July","August","September","October","November","December"};
-
-    char filename[64];
-    snprintf(filename, sizeof(filename), "bill_%d_%s_%d.txt", c.customer_id, months[month], year);
-
-    FILE *fp = fopen(filename, "w");
-    if (!fp) { printf("  [ERROR] Could not create file.\n"); return; }
-
-    fprintf(fp, "============================================================\n");
-    fprintf(fp, "         ELECTRICITY BILL / TAX INVOICE\n");
-    fprintf(fp, "         Power Distribution Corporation\n");
-    fprintf(fp, "============================================================\n");
-    fprintf(fp, "  Bill Month     : %s %d\n", months[month], year);
-    fprintf(fp, "  Customer ID    : %d\n", c.customer_id);
-    fprintf(fp, "  Name           : %s\n", c.name);
-    fprintf(fp, "  Address        : %s\n", c.address);
-    fprintf(fp, "  Meter No.      : %s\n", c.meter_number);
-    fprintf(fp, "  Conn. Type     : %s\n", c.connection_type);
-    fprintf(fp, "------------------------------------------------------------\n");
-    fprintf(fp, "  Previous Reading : %.2f kWh\n", c.previous_reading);
-    fprintf(fp, "  Current Reading  : %.2f kWh\n", c.current_reading);
-    fprintf(fp, "  Units Consumed   : %.2f kWh\n", units);
-    fprintf(fp, "------------------------------------------------------------\n");
-    fprintf(fp, "  Energy Charges (Base) : $%.2f\n", base);
-    fprintf(fp, "  Surcharge             : $%.2f\n", sur);
-    fprintf(fp, "  Fuel Adjustment       : $%.2f\n", fuel);
-    fprintf(fp, "  Meter Rent            : $%.2f\n", rent);
-    fprintf(fp, "  Sub Total             : $%.2f\n", sub);
-    fprintf(fp, "  Tax                   : $%.2f\n", tax);
-    fprintf(fp, "============================================================\n");
-    fprintf(fp, "  TOTAL AMOUNT DUE      : $%.2f\n", total);
-    fprintf(fp, "============================================================\n");
-
+    fprintf(fp, "========================================\n");
+    fprintf(fp, "  ELECTRICITY BILL  |  %d/%d\n", month, year);
+    fprintf(fp, "========================================\n");
+    fprintf(fp, "  ID     : %d\n  Name   : %s\n", id, name);
+    fprintf(fp, "  Units  : %.2f kWh\n", units);
+    fprintf(fp, "  Base   : $%.2f\n  Sur    : $%.2f\n", base, sur);
+    fprintf(fp, "  Fuel   : $%.2f\n  Rent   : $%.2f\n", fuel, rent);
+    fprintf(fp, "  Tax    : $%.2f\n", tax);
+    fprintf(fp, "========================================\n");
+    fprintf(fp, "  TOTAL  : $%.2f\n", total);
+    fprintf(fp, "========================================\n");
     fclose(fp);
-    printf("\n  [SUCCESS] Bill exported to: %s\n", filename);
+    printf("  Saved to: %s\n", fname);
 }
 
 int main() {
     int choice;
-
     while (1) {
-        clear_screen();
-        print_header();
-        print_menu();
-        scanf("%d", &choice);
+        printf("\n========================================\n");
+        printf("    ELECTRICITY BILL CALCULATOR\n");
+        printf("========================================\n");
+        printf("  1. Generate Bill\n");
+        printf("  2. Bulk Billing\n");
+        printf("  3. Slab Rate Info\n");
+        printf("  4. Payment Due Calculator\n");
+        printf("  5. Export Bill to File\n");
+        printf("  0. Exit\n");
+        printf("----------------------------------------\n");
+        printf("  Choice: "); scanf("%d", &choice);
 
         switch (choice) {
-            case 1: generate_bill();           break;
-            case 2: bulk_billing();            break;
-            case 3:
-                printf("\n  [INFO] History module requires saved records.\n");
-                printf("  Use option [9] to export bills and build your records.\n");
-                break;
-            case 4:
-                printf("\n  [INFO] Enter Customer ID to search: ");
-                int id; scanf("%d", &id);
-                printf("  Searching for Customer ID: %d...\n", id);
-                printf("  [INFO] No database connected. Use export feature to save records.\n");
-                break;
-            case 5: consumption_graph();       break;
-            case 6: slab_info();               break;
-            case 7: payment_due_calculator();  break;
-            case 8: energy_saving_tips();      break;
-            case 9: export_report();           break;
+            case 1: generateBill(); break;
+            case 2: bulkBilling();  break;
+            case 3: slabInfo();     break;
+            case 4: paymentDue();   break;
+            case 5: exportBill();   break;
             case 0:
-                printf("\n");
-                print_line('=', 60);
-                print_centered("Thank you for using Power Distribution Corp.", 60);
-                print_centered("Save Energy. Save Money. Save the Planet.", 60);
-                print_line('=', 60);
-                printf("\n");
-                exit(0);
+                printf("\n  Goodbye! Save energy!\n\n");
+                return 0;
             default:
-                printf("\n  [ERROR] Invalid choice. Please enter 0-9.\n");
+                printf("  Invalid choice!\n");
         }
 
-        printf("\n  Press ENTER to return to main menu...");
+        printf("\n  Press ENTER to continue...");
         while (getchar() != '\n');
         getchar();
     }
-
-    return 0;
 }
