@@ -150,7 +150,7 @@ void print_detailed_bill(Customer *c, int month, int year) {
     print_line('*', 60);
     print_centered("ELECTRICITY BILL / TAX INVOICE", 60);
     print_centered("Power Distribution Corporation", 60);
-    printf("  Helpline: 1800-XXX-XXXX   |   www.powercorp.example\n");
+    printf("  Helpline: 01734-345353   |   www.roja.supplypower\n");
     print_line('*', 60);
 
     printf("  Bill Month   : %s %d\n", months[month], year);
