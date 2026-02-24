@@ -1,192 +1,167 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
-void line() { printf("----------------------------------------\n"); }
+typedef struct {
+    int   units_limit;
+    float rate_per_unit;
+    char  label[20];
+} Slab;
 
-float calcBill(float units) {
-    if (units <= 100) return units * 1.50;
-    if (units <= 200) return 150  + (units - 100) * 2.50;
-    if (units <= 300) return 400  + (units - 200) * 4.00;
-    if (units <= 500) return 800  + (units - 300) * 6.00;
-    return              2000 + (units - 500) * 9.00;
-}
+typedef struct {
+    char name[50];
+    char meter_no[15];
+    int  prev_reading;
+    int  curr_reading;
+} Customer;
 
-float getTax(char *type) {
-    if (strcmp(type, "2") == 0) return 0.08;
-    if (strcmp(type, "3") == 0) return 0.10;
-    return 0.05;
-}
+Slab slabs[] = {
+    {  75,  3.50f, "Lifeline" },
+    { 200,  5.14f, "Basic"    },
+    { 300,  5.36f, "Mid"      },
+    { 400,  5.63f, "High"     },
+    { 500,  9.94f, "Premium"  },
+    { 600, 11.46f, "Upper"    },
+    {9999, 11.74f, "Max"      },
+};
 
-float getRent(char *type) {
-    if (strcmp(type, "2") == 0) return 75;
-    if (strcmp(type, "3") == 0) return 150;
-    return 30;
-}
+float VAT_RATE   = 0.05f;
+float METER_RENT = 40.0f;
+float DEMAND_CHG = 30.0f;
 
-void generateBill() {
-    int id;
-    char name[50], type[5];
-    float prev, curr;
-
-    printf("\n  Customer ID   : "); scanf("%d", &id);
-    printf("  Name          : "); scanf(" %[^\n]", name);
-    printf("  Prev Reading  : "); scanf("%f", &prev);
-    printf("  Curr Reading  : "); scanf("%f", &curr);
-
-    if (curr < prev) { printf("  ERROR: Invalid reading!\n"); return; }
-
-    printf("  Type (1=Residential 2=Commercial 3=Industrial): ");
-    scanf(" %s", type);
-
-    float units    = curr - prev;
-    float base     = calcBill(units);
-    float surcharge = (base > 300) ? base * 0.15 : (base > 100) ? base * 0.10 : 0;
-    float fuel     = units * 0.15;
-    float rent     = getRent(type);
-    float subtotal = base + surcharge + fuel + rent;
-    float tax      = subtotal * getTax(type);
-    float total    = subtotal + tax;
-
-    printf("\n"); line();
-    printf("  BILL SUMMARY - Customer: %s (ID: %d)\n", name, id);
-    line();
-    printf("  Units Consumed : %.2f kWh\n", units);
-    printf("  Base Charge    : $%.2f\n", base);
-    printf("  Surcharge      : $%.2f\n", surcharge);
-    printf("  Fuel Adj.      : $%.2f\n", fuel);
-    printf("  Meter Rent     : $%.2f\n", rent);
-    printf("  Tax            : $%.2f\n", tax);
-    line();
-    printf("  TOTAL DUE      : $%.2f\n", total);
-    line();
-    if      (units <= 100) printf("  Status: LOW usage. Great!\n");
-    else if (units <= 300) printf("  Status: MODERATE usage.\n");
-    else                   printf("  Status: HIGH usage. Save energy!\n");
-}
-
-void bulkBilling() {
-    int n;
-    printf("\n  How many customers? "); scanf("%d", &n);
-    float grand = 0;
-    printf("\n  %-5s %-15s %10s %10s\n", "ID", "Name", "Units", "Bill($)");
-    line();
-    for (int i = 0; i < n; i++) {
-        int id; char name[50]; float prev, curr;
-        printf("  Customer %d ID   : ", i+1); scanf("%d", &id);
-        printf("  Name            : "); scanf(" %[^\n]", name);
-        printf("  Prev / Curr kWh : "); scanf("%f %f", &prev, &curr);
-        float units = curr - prev;
-        float bill  = calcBill(units) * 1.15;
-        grand += bill;
-        printf("  %-5d %-15s %10.2f %10.2f\n", id, name, units, bill);
+void loading_bar() {
+    printf("\n  Calculating");
+    for (int i = 0; i < 10; i++) {
+        printf(".");
+        fflush(stdout);
+        for (volatile long j = 0; j < 8000000L; j++);
     }
-    line();
-    printf("  GRAND TOTAL: $%.2f  |  Avg: $%.2f\n", grand, grand / n);
+    printf(" Done!\n\n");
 }
 
-void slabInfo() {
-    printf("\n"); line();
-    printf("  SLAB RATES\n"); line();
-    printf("  0   - 100 units : $1.50/unit\n");
-    printf("  101 - 200 units : $2.50/unit\n");
-    printf("  201 - 300 units : $4.00/unit\n");
-    printf("  301 - 500 units : $6.00/unit\n");
-    printf("  Above 500 units : $9.00/unit\n");
-    line();
-    printf("  Surcharge : 10%% (bill>$100)  15%% (bill>$300)\n");
-    printf("  Fuel Adj  : $0.15 per unit\n");
-    printf("  Meter Rent: $30 / $75 / $150 (Res/Com/Ind)\n");
-    printf("  Tax       : 5%% / 8%% / 10%%  (Res/Com/Ind)\n");
-    line();
+float calculate_bill(int units, float *breakdown, int *num_slabs_used) {
+    float total      = 0.0f;
+    int   remaining  = units;
+    int   prev_limit = 0;
+    *num_slabs_used  = 0;
+
+    for (int i = 0; i < 7 && remaining > 0; i++) {
+        int slab_units = slabs[i].units_limit - prev_limit;
+        int used       = (remaining < slab_units) ? remaining : slab_units;
+        breakdown[i]   = used * slabs[i].rate_per_unit;
+        total         += breakdown[i];
+        remaining     -= used;
+        prev_limit     = slabs[i].units_limit;
+        (*num_slabs_used)++;
+    }
+    return total;
 }
 
-void paymentDue() {
-    float bill, days;
-    printf("\n  Bill Amount  : $"); scanf("%f", &bill);
-    printf("  Days Overdue : ");   scanf("%f", &days);
-    float rate = (days > 60) ? 0.10 : (days > 30) ? 0.05 : (days > 15) ? 0.02 : 0;
-    float penalty = bill * rate;
-    printf("\n"); line();
-    printf("  Original Bill  : $%.2f\n", bill);
-    printf("  Penalty (%.0f%%) : $%.2f\n", rate * 100, penalty);
-    printf("  TOTAL DUE      : $%.2f\n", bill + penalty);
-    line();
-    if (days == 0)      printf("  ON TIME - No penalty.\n");
-    else if (days <= 15) printf("  GRACE PERIOD - Pay now!\n");
-    else                 printf("  OVERDUE - %.0f%% penalty applied.\n", rate * 100);
-}
+void print_bill(Customer *c) {
+    int units = c->curr_reading - c->prev_reading;
 
-void exportBill() {
-    int id, month, year;
-    char name[50], type[5];
-    float prev, curr;
+    if (units < 0) {
+        printf("  [!] ERROR: Current reading cannot be less than previous!\n");
+        return;
+    }
 
-    printf("\n  ID     : "); scanf("%d", &id);
-    printf("  Name   : "); scanf(" %[^\n]", name);
-    printf("  Prev / Curr Reading: "); scanf("%f %f", &prev, &curr);
-    printf("  Type (1/2/3): "); scanf(" %s", type);
-    printf("  Month / Year: "); scanf("%d %d", &month, &year);
+    float breakdown[7] = {0};
+    int   slabs_used    = 0;
+    float energy_charge = calculate_bill(units, breakdown, &slabs_used);
+    float vat           = energy_charge * VAT_RATE;
+    float grand_total   = energy_charge + vat + METER_RENT + DEMAND_CHG;
 
-    float units    = curr - prev;
-    float base     = calcBill(units);
-    float sur      = (base > 300) ? base*0.15 : (base > 100) ? base*0.10 : 0;
-    float fuel     = units * 0.15;
-    float rent     = getRent(type);
-    float sub      = base + sur + fuel + rent;
-    float tax      = sub * getTax(type);
-    float total    = sub + tax;
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+    char date_str[30];
+    strftime(date_str, sizeof(date_str), "%d-%m-%Y", tm_info);
 
-    char fname[40];
-    snprintf(fname, sizeof(fname), "bill_%d_%d_%d.txt", id, month, year);
-    FILE *fp = fopen(fname, "w");
-    if (!fp) { printf("  ERROR: Cannot create file.\n"); return; }
+    loading_bar();
 
-    fprintf(fp, "========================================\n");
-    fprintf(fp, "  ELECTRICITY BILL  |  %d/%d\n", month, year);
-    fprintf(fp, "========================================\n");
-    fprintf(fp, "  ID     : %d\n  Name   : %s\n", id, name);
-    fprintf(fp, "  Units  : %.2f kWh\n", units);
-    fprintf(fp, "  Base   : $%.2f\n  Sur    : $%.2f\n", base, sur);
-    fprintf(fp, "  Fuel   : $%.2f\n  Rent   : $%.2f\n", fuel, rent);
-    fprintf(fp, "  Tax    : $%.2f\n", tax);
-    fprintf(fp, "========================================\n");
-    fprintf(fp, "  TOTAL  : $%.2f\n", total);
-    fprintf(fp, "========================================\n");
-    fclose(fp);
-    printf("  Saved to: %s\n", fname);
+    printf("  +==================================================+\n");
+    printf("  |        BANGLADESH POWER DEVELOPMENT BOARD        |\n");
+    printf("  |              MONTHLY ELECTRICITY BILL            |\n");
+    printf("  +==================================================+\n\n");
+
+    printf("  Bill Date    : %s\n", date_str);
+    printf("  Customer     : %s\n", c->name);
+    printf("  Meter No.    : %s\n", c->meter_no);
+    printf("  Prev Reading : %d kWh\n", c->prev_reading);
+    printf("  Curr Reading : %d kWh\n", c->curr_reading);
+    printf("  Total Units  : %d kWh\n", units);
+
+    printf("\n  +----------+----------+-----------+-------------+\n");
+    printf("  |              ENERGY CHARGE BREAKDOWN          |\n");
+    printf("  +----------+----------+-----------+-------------+\n");
+    printf("  |  Slab    |  Units   |  Rate(Tk) | Amount (Tk) |\n");
+    printf("  +----------+----------+-----------+-------------+\n");
+
+    int prev_limit = 0;
+    for (int i = 0; i < slabs_used; i++) {
+        int slab_max     = slabs[i].units_limit;
+        int used_in_slab = (i == slabs_used - 1) ? (units - prev_limit) : (slab_max - prev_limit);
+        printf("  |  %-8s|  %-8d|  %-9.2f|  Tk %-7.2f|\n",
+               slabs[i].label, used_in_slab,
+               slabs[i].rate_per_unit, breakdown[i]);
+        prev_limit = slab_max;
+    }
+
+    printf("  +----------------------------------+-------------+\n");
+    printf("  |  Energy Charge Total             |  Tk %-7.2f|\n", energy_charge);
+    printf("  +----------------------------------+-------------+\n");
+    printf("  |  VAT (5%%)                        |  Tk %-7.2f|\n", vat);
+    printf("  |  Meter Rent                      |  Tk %-7.2f|\n", METER_RENT);
+    printf("  |  Demand Charge                   |  Tk %-7.2f|\n", DEMAND_CHG);
+    printf("  +----------------------------------+-------------+\n");
+    printf("  |  GRAND TOTAL PAYABLE             |  Tk %-7.2f|\n", grand_total);
+    printf("  +----------------------------------+-------------+\n\n");
+
+    printf("  Usage Status : ");
+    if      (units <= 75)  printf("Lifeline User  - Excellent! Keep saving.\n");
+    else if (units <= 200) printf("Normal User    - Good consumption.\n");
+    else if (units <= 400) printf("Moderate User  - Try to reduce usage.\n");
+    else                   printf("High User      - Please reduce usage!\n");
+
+    printf("\n  Tip: Turn off unused appliances to lower your bill.\n");
+    printf("  ==================================================\n");
+    printf("         Thank you for using BPDB Services!\n");
+    printf("  ==================================================\n\n");
 }
 
 int main() {
-    int choice;
-    while (1) {
-        printf("\n========================================\n");
-        printf("    ELECTRICITY BILL CALCULATOR\n");
-        printf("========================================\n");
-        printf("  1. Generate Bill\n");
-        printf("  2. Bulk Billing\n");
-        printf("  3. Slab Rate Info\n");
-        printf("  4. Payment Due Calculator\n");
-        printf("  5. Export Bill to File\n");
-        printf("  0. Exit\n");
-        printf("----------------------------------------\n");
-        printf("  Choice: "); scanf("%d", &choice);
+    Customer c;
+    char again = 'y';
 
-        switch (choice) {
-            case 1: generateBill(); break;
-            case 2: bulkBilling();  break;
-            case 3: slabInfo();     break;
-            case 4: paymentDue();   break;
-            case 5: exportBill();   break;
-            case 0:
-                printf("\n  Goodbye! Save energy!\n\n");
-                return 0;
-            default:
-                printf("  Invalid choice!\n");
-        }
+    printf("\n  +======================================+\n");
+    printf("  |   ELECTRICITY BILL CALCULATOR        |\n");
+    printf("  |      Powered by C Programming        |\n");
+    printf("  +======================================+\n\n");
 
-        printf("\n  Press ENTER to continue...");
-        while (getchar() != '\n');
+    while (again == 'y' || again == 'Y') {
+
+        printf("  Enter Customer Name         : ");
+        fgets(c.name, sizeof(c.name), stdin);
+        c.name[strcspn(c.name, "\n")] = '\0';
+
+        printf("  Enter Meter Number          : ");
+        fgets(c.meter_no, sizeof(c.meter_no), stdin);
+        c.meter_no[strcspn(c.meter_no, "\n")] = '\0';
+
+        printf("  Enter Previous Reading (kWh): ");
+        scanf("%d", &c.prev_reading);
+
+        printf("  Enter Current  Reading (kWh): ");
+        scanf("%d", &c.curr_reading);
         getchar();
+
+        print_bill(&c);
+
+        printf("  Generate another bill? (y/n): ");
+        scanf("%c", &again);
+        getchar();
+        printf("\n");
     }
+
+    printf("  Exiting... Goodbye!\n\n");
+    return 0;
 }
